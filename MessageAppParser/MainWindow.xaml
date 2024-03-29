@@ -8,19 +8,23 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="800" Loaded="Window_Loaded">
     <DockPanel>
-        <Button x:Name="button_LoadConversation" Content="Button" HorizontalAlignment="Left" VerticalAlignment="Top" Click="button_LoadConversation_Click" DockPanel.Dock="Top"/>
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Button x:Name="button_RescaleVerticalAxis" Content="Rescale" HorizontalAlignment="Left" Width="43" Click="button_RescaleVerticalAxis_Click"></Button>
-            <Button Grid.Row="1" Grid.Column="1" Content="Rescale"></Button>
-            <ScottPlot:WpfPlot x:Name="wpfPlot_ResponseTime" MouseMove="wpfPlot_ResponseTime_MouseMove" Grid.Row="0" Grid.Column="1" />
-        </Grid>
+        <Button x:Name="button_LoadConversation" Content="Load Conversation File" Click="button_LoadConversation_Click" DockPanel.Dock="Top"/>
+        <DockPanel>
+            <Label DockPanel.Dock="Top" Content="Response Time" HorizontalContentAlignment="Center" FontSize="24" FontWeight="Bold" Padding="5,1,5,0" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Button x:Name="button_RescaleVerticalAxis" Content="R" HorizontalAlignment="Left" Click="button_RescaleVerticalAxis_Click" Padding="1,1,1,1" Width="25"></Button>
+                <Button x:Name="button_RescaleHorizontalAxis" Grid.Row="1" Grid.Column="1" Content="R" Click="button_RescaleHorizontalAxis_Click" Height="25"></Button>
+                <Button x:Name="button_RescaleBothAxes" Grid.Row="1" Grid.Column="0" Content="R" Click="button_RescaleBothAxes_Click" Width="25" Height="25"/>
+                <ScottPlot:WpfPlot x:Name="wpfPlot_ResponseTime" MouseMove="wpfPlot_ResponseTime_MouseMove" Grid.Row="0" Grid.Column="1" PreviewMouseDoubleClick="wpfPlot_ResponseTime_PreviewMouseDoubleClick" />
+            </Grid>
+        </DockPanel>
     </DockPanel>
 </Window>
