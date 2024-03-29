@@ -6,16 +6,21 @@
         xmlns:local="clr-namespace:MessageAppParser"
         xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <Button x:Name="button_LoadConversation" Content="Button" HorizontalAlignment="Left" VerticalAlignment="Top" Click="button_LoadConversation_Click"/>
-        <StackPanel x:Name="stackPanel_Plots" Grid.Row="1">
-        </StackPanel>
-
-
-    </Grid>
+        Title="MainWindow" Height="600" Width="800" Loaded="Window_Loaded">
+    <DockPanel>
+        <Button x:Name="button_LoadConversation" Content="Button" HorizontalAlignment="Left" VerticalAlignment="Top" Click="button_LoadConversation_Click" DockPanel.Dock="Top"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Button x:Name="button_RescaleVerticalAxis" Content="Rescale" HorizontalAlignment="Left" Width="43" Click="button_RescaleVerticalAxis_Click"></Button>
+            <Button Grid.Row="1" Grid.Column="1" Content="Rescale"></Button>
+            <ScottPlot:WpfPlot x:Name="wpfPlot_ResponseTime" MouseMove="wpfPlot_ResponseTime_MouseMove" Grid.Row="0" Grid.Column="1" />
+        </Grid>
+    </DockPanel>
 </Window>

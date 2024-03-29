@@ -1,6 +1,8 @@
 ﻿using MessageAppParser.Apps.Instagram;
 using Microsoft.Win32;
 using ScottPlot;
+using ScottPlot.AxisRules;
+using ScottPlot.Plottables;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -47,21 +49,34 @@ namespace MessageAppParser
             Debug.Assert(conversation.MessageBatches is not null);
             Debug.Assert(conversation.ResponseTimeBeforeMessageBatches is not null);
 
-            IEnumerable<MessageBatch> skippedMessageBatches = conversation.MessageBatches.Skip(5); // Must be at least 1
+            IEnumerable<MessageBatch> skippedMessageBatches = conversation.MessageBatches.Skip(1); // Must be at least 1
 
+            wpfPlot_ResponseTime.Plot.Axes.Left.Label.Text = "Hours to reply";
+            wpfPlot_ResponseTime.Plot.Title("Response time");
             foreach (Participant participant in conversation.Participants)
             {
-                ScottPlot.WPF.WpfPlot wpfPlot = new();
-                wpfPlot.Height = 200;
                 IEnumerable<MessageBatch> filteredMessageBatches1 = skippedMessageBatches.Where(mB => mB.SenderParticipant == participant);
-                double[] data1X = filteredMessageBatches1.Select(mB => mB.Messages.First().Timestamp.ToOADate()).ToArray();
-                double[] data1Y = filteredMessageBatches1.Select(mB => conversation.ResponseTimeBeforeMessageBatches[mB].TotalHours).ToArray();
-                wpfPlot.Plot.Add.Scatter(data1X, data1Y);
-                wpfPlot.Plot.Axes.DateTimeTicksBottom();
-                wpfPlot.Plot.Axes.AutoScaleY();
-                wpfPlot.Refresh();
-                this.stackPanel_Plots.Children.Add(wpfPlot);
+                double[] dataX = filteredMessageBatches1.Select(mB => mB.Messages.First().Timestamp.ToOADate()).ToArray();
+                double[] dataY = filteredMessageBatches1.Select(mB => conversation.ResponseTimeBeforeMessageBatches[mB].TotalHours).ToArray();
+
+                wpfPlot_ResponseTime.Plot.Add.Scatter(dataX, dataY);
             }
+            wpfPlot_ResponseTime.Plot.Axes.DateTimeTicksBottom(); // Must be before the autoscale
+
+            wpfPlot_ResponseTime.Plot.Axes.AutoScaleX();
+            wpfPlot_ResponseTime.Plot.Axes.AutoScaleY();
+            wpfPlot_ResponseTime.Plot.Axes.Rules.Add(new MaximumBoundary(
+                xAxis: wpfPlot_ResponseTime.Plot.Axes.Bottom,
+                yAxis: wpfPlot_ResponseTime.Plot.Axes.Left,
+                wpfPlot_ResponseTime.Plot.Axes.GetLimits(
+                    xAxis: wpfPlot_ResponseTime.Plot.Axes.Bottom,
+                    yAxis: wpfPlot_ResponseTime.Plot.Axes.Left)));
+
+            wpfPlot_ResponseTime.Plot.Add.Crosshair(0, 0); // Must be after the whole scaling stuff
+
+            wpfPlot_ResponseTime.MouseMove += wpfPlot_ResponseTime_MouseMove;
+
+            wpfPlot_ResponseTime.Refresh();
         }
 
         #region Events
@@ -84,6 +99,49 @@ namespace MessageAppParser
             if (result is not null && result.Value)
             {
                 loadConversation(dialog.FileName);
+            }
+        }
+
+        private void button_RescaleVerticalAxis_Click(object sender, RoutedEventArgs e)
+        {
+            wpfPlot_ResponseTime.Plot.Axes.AutoScaleY();
+            wpfPlot_ResponseTime.Refresh();
+        }
+
+        private void wpfPlot_ResponseTime_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (sender is ScottPlot.WPF.WpfPlot wpfPlot)
+            {
+                Crosshair crosshair = wpfPlot.Plot.PlottableList.First(p => p is Crosshair) as Crosshair;
+
+                // determine where the mouse is and get the nearest point
+                Point mousePoint = e.GetPosition(wpfPlot);
+                Pixel mousePixel = new(mousePoint.X, mousePoint.Y);
+                Coordinates mouseLocation = wpfPlot.Plot.GetCoordinates(mousePixel);
+
+                IEnumerable<DataPoint> nearestPoints = wpfPlot.Plot.PlottableList.Where(p => p is Scatter).Select(p => (p as Scatter).Data.GetNearest(mouseLocation, wpfPlot.Plot.LastRender));
+                IEnumerable<DataPoint> nearestRealPoints = nearestPoints.Where(nP => nP.IsReal);
+
+                if (nearestRealPoints.Count() > 0)
+                {
+                    DataPoint nearestRealPoint = nearestRealPoints.MinBy(nRP =>
+                    {
+                        double xDiff = Math.Abs(mouseLocation.X - nRP.X);
+                        double yDiff = Math.Abs(mouseLocation.Y - nRP.Y);
+                        double distanceSqr = (xDiff * xDiff) + (yDiff * yDiff);
+                        return distanceSqr;
+                    });
+                    crosshair.IsVisible = true;
+                    crosshair.Position = nearestRealPoint.Coordinates;
+                    wpfPlot.Refresh();
+                    //Text = $"Selected Index={nearest.Index}, X={nearest.X:0.##}, Y={nearest.Y:0.##}";
+                }
+                else if (crosshair.IsVisible)
+                {
+                    crosshair.IsVisible = false;
+                    wpfPlot.Refresh();
+                    //Text = $"No point selected";
+                }
             }
         }
 
