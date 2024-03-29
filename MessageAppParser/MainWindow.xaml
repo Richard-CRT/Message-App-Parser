@@ -4,10 +4,18 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MessageAppParser"
+        xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
     <Grid>
-        <Button x:Name="button_LoadConversation" Content="Button" HorizontalAlignment="Left" Margin="62,51,0,0" VerticalAlignment="Top" Click="button_LoadConversation_Click"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Button x:Name="button_LoadConversation" Content="Button" HorizontalAlignment="Left" VerticalAlignment="Top" Click="button_LoadConversation_Click"/>
+        <StackPanel x:Name="stackPanel_Plots" Grid.Row="1">
+        </StackPanel>
+
 
     </Grid>
 </Window>

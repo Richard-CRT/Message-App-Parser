@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace MessageAppParser
 {
-    internal class Message
+    internal class MessageBatch
     {
         private Participant? _senderParticipant = null;
         [JsonPropertyName("sender_participant"), JsonPropertyOrder(1)]
@@ -25,42 +24,28 @@ namespace MessageAppParser
             }
         }
 
-        private DateTime? _timestamp = null;
-        [JsonPropertyName("timestamp"), JsonPropertyOrder(2)]
-        public DateTime Timestamp
+        private List<Message>? _messages = null;
+        [JsonPropertyName("messages"), JsonPropertyOrder(2)]
+        public List<Message> Messages
         {
-            get { Debug.Assert(_timestamp is not null); return _timestamp.Value; }
+            get { Debug.Assert(_messages is not null); return _messages; }
             set
             {
-                if (_timestamp != value)
+                if (_messages != value)
                 {
-                    _timestamp = value;
+                    _messages = value;
                 }
             }
         }
 
-        private string? _textContent = null;
-        [JsonPropertyName("text_content"), JsonPropertyOrder(3)]
-        public string? TextContent
+        public MessageBatch()
         {
-            get { return _textContent; }
-            set
-            {
-                if (_textContent != value)
-                {
-                    _textContent = value;
-                }
-            }
-        }
-
-        public Message()
-        {
+            Messages = new();
         }
 
         public override string ToString()
         {
-            return $"[Message | Sender: {SenderParticipant}]";
+            return $"[MessageBatch | Messages: {Messages.Count}]";
         }
-
     }
 }

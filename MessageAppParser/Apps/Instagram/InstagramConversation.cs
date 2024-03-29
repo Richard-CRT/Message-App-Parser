@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace MessageAppParser
+namespace MessageAppParser.Apps.Instagram
 {
     internal class InstagramConversation
     {
@@ -26,7 +26,7 @@ namespace MessageAppParser
 
                 if (o is null) throw new ArgumentNullException("InstagramConversation is null");
 
-                instagramConversation = (InstagramConversation)o!;
+                instagramConversation = o!;
             }
             catch (FileNotFoundException)
             {
@@ -53,14 +53,35 @@ namespace MessageAppParser
             }
         }
 
+        private List<InstagramMessage>? _messages = null;
+        [JsonPropertyName("messages"), JsonPropertyOrder(2)]
+        public List<InstagramMessage> Messages
+        {
+            get { Debug.Assert(_messages is not null); return _messages; }
+            set
+            {
+                if (_messages != value)
+                {
+                    _messages = value;
+                }
+            }
+        }
+
         public InstagramConversation()
         {
-            Participants = new();
         }
 
         public override string ToString()
         {
-            return $"[Instagram Conversation | Participants: {Participants.Count}]";
+            return $"[Instagram Conversation | Participants: {Participants.Count} | Messages: {Messages.Count}]";
+        }
+
+        public Conversation ToGenericConversation()
+        {
+            Conversation conversation = new();
+            conversation.Participants = this.Participants.Select(p => p.ToGenericParticipant()).ToList();
+            conversation.Messages = this.Messages.Select(p => p.ToGenericMessage(conversation.Participants)).ToList();
+            return conversation;
         }
     }
 }

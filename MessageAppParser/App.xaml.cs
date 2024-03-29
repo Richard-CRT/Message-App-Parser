@@ -13,5 +13,14 @@ namespace MessageAppParser
     /// </summary>
     public partial class App : Application
     {
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+            MainWindow mainWindow;
+            if (e.Args.Length == 0)
+                mainWindow = new MainWindow();
+            else
+                mainWindow = new MainWindow(e.Args[0]);
+            mainWindow.Show();
+        }
     }
 }

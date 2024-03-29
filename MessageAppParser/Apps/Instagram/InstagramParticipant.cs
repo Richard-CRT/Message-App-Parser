@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace MessageAppParser
+namespace MessageAppParser.Apps.Instagram
 {
     internal class InstagramParticipant
     {
@@ -31,6 +31,13 @@ namespace MessageAppParser
         public override string ToString()
         {
             return $"[Instagram Participant | Name: {Name}]";
+        }
+
+        public Participant ToGenericParticipant()
+        {
+            Participant participant = new();
+            participant.Name = Name;
+            return participant;
         }
     }
 }
