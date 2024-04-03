@@ -91,6 +91,7 @@ namespace MessageAppParser
 
             Crosshair crosshair = wpfPlot_ResponseTime.Plot.Add.Crosshair(0, 0); // Must be after the whole scaling stuff
             crosshair.IsVisible = false;
+
             Text text = wpfPlot_ResponseTime.Plot.Add.Text("", 0, 0);
             text.BackColor = ScottPlot.Colors.LightGrey.WithOpacity(0.8);
             text.Label.BorderColor = ScottPlot.Colors.Black;
@@ -150,52 +151,52 @@ namespace MessageAppParser
         {
             if (sender is ScottPlot.WPF.WpfPlot wpfPlot)
             {
-                Crosshair crosshair = wpfPlot.Plot.PlottableList.First(p => p is Crosshair) as Crosshair;
-                Text text = wpfPlot.Plot.PlottableList.First(p => p is Text) as Text;
+                Crosshair? crosshair = (Crosshair?)wpfPlot.Plot.PlottableList.FirstOrDefault(p => p is Crosshair, null);
+                Text? text = (Text?)wpfPlot.Plot.PlottableList.FirstOrDefault(p => p is Text, null);
 
-                Debug.Assert(crosshair is not null);
-                Debug.Assert(text is not null);
-
-                // determine where the mouse is and get the nearest point
-                Point mousePoint = e.GetPosition(wpfPlot);
-                Pixel mousePixel = new(mousePoint.X, mousePoint.Y);
-                Coordinates mouseLocation = wpfPlot.Plot.GetCoordinates(mousePixel);
-
-                IEnumerable<DataPoint> nearestPoints = wpfPlot.Plot.PlottableList.Where(p => p is Scatter).Select(p => (p as Scatter)!.Data.GetNearest(mouseLocation, wpfPlot.Plot.LastRender));
-                IEnumerable<DataPoint> nearestRealPoints = nearestPoints.Where(nP => nP.IsReal);
-
-                if (nearestRealPoints.Count() > 0)
+                if (crosshair is not null && text is not null)
                 {
-                    DataPoint nearestRealPoint = nearestRealPoints.MinBy(nRP =>
+                    // determine where the mouse is and get the nearest point
+                    Point mousePoint = e.GetPosition(wpfPlot);
+                    Pixel mousePixel = new(mousePoint.X, mousePoint.Y);
+                    Coordinates mouseLocation = wpfPlot.Plot.GetCoordinates(mousePixel);
+
+                    IEnumerable<DataPoint> nearestPoints = wpfPlot.Plot.PlottableList.Where(p => p is Scatter).Select(p => (p as Scatter)!.Data.GetNearest(mouseLocation, wpfPlot.Plot.LastRender));
+                    IEnumerable<DataPoint> nearestRealPoints = nearestPoints.Where(nP => nP.IsReal);
+
+                    if (nearestRealPoints.Count() > 0)
                     {
-                        double xDiff = Math.Abs(mouseLocation.X - nRP.X);
-                        double yDiff = Math.Abs(mouseLocation.Y - nRP.Y);
-                        double distanceSqr = (xDiff * xDiff) + (yDiff * yDiff);
-                        return distanceSqr;
-                    });
-                    crosshair.IsVisible = true;
-                    crosshair.Position = nearestRealPoint.Coordinates;
-                    text.IsVisible = true;
-                    text.Location = nearestRealPoint.Coordinates;
+                        DataPoint nearestRealPoint = nearestRealPoints.MinBy(nRP =>
+                        {
+                            double xDiff = Math.Abs(mouseLocation.X - nRP.X);
+                            double yDiff = Math.Abs(mouseLocation.Y - nRP.Y);
+                            double distanceSqr = (xDiff * xDiff) + (yDiff * yDiff);
+                            return distanceSqr;
+                        });
+                        crosshair.IsVisible = true;
+                        crosshair.Position = nearestRealPoint.Coordinates;
+                        text.IsVisible = true;
+                        text.Location = nearestRealPoint.Coordinates;
 
-                    int totalSeconds = (int)Math.Round(nearestRealPoint.Y * 60 * 60);
-                    int remainderSeconds = totalSeconds;
+                        int totalSeconds = (int)Math.Round(nearestRealPoint.Y * 60 * 60);
+                        int remainderSeconds = totalSeconds;
 
-                    int hours = totalSeconds / (60 * 60);
-                    remainderSeconds = totalSeconds % (60 * 60);
-                    int minutes = remainderSeconds / 60;
-                    remainderSeconds = remainderSeconds % 60;
-                    int seconds = remainderSeconds;
-                    
-                    text.LabelText = $"{nearestRealPoint.X.ToDateTime().ToString("yyyy-MM-dd HH:mm:ss")}, {hours:00.}:{minutes:00.}:{seconds:00.}";
-                    wpfPlot.Refresh();
-                }
-                else if (crosshair.IsVisible)
-                {
-                    crosshair.IsVisible = false;
-                    text.IsVisible = false;
-                    wpfPlot.Refresh();
-                    //Text = $"No point selected";
+                        int hours = totalSeconds / (60 * 60);
+                        remainderSeconds = totalSeconds % (60 * 60);
+                        int minutes = remainderSeconds / 60;
+                        remainderSeconds = remainderSeconds % 60;
+                        int seconds = remainderSeconds;
+
+                        text.LabelText = $"{nearestRealPoint.X.ToDateTime().ToString("yyyy-MM-dd HH:mm:ss")}, {hours:00.}:{minutes:00.}:{seconds:00.}";
+                        wpfPlot.Refresh();
+                    }
+                    else if (crosshair.IsVisible)
+                    {
+                        crosshair.IsVisible = false;
+                        text.IsVisible = false;
+                        wpfPlot.Refresh();
+                        //Text = $"No point selected";
+                    }
                 }
             }
         }
